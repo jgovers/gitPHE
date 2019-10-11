@@ -64,4 +64,5 @@ xs1_e = -Qi @(A.T @mu1_e + c_e)
 xs1 = xs1_e.decrypt(private_key)
 Zs1 = .5*xs1.T @Q @xs1 + c.T @xs1    
 
+
 t4 = time.time()
