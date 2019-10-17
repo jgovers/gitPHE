@@ -7,7 +7,7 @@ Created on Thu Jun 20 18:00:18 2019
 
 from phe import paillier as phe
 import numpy as np
-import pheMat as pheMat
+import pheMat 
 import random
 import time 
 

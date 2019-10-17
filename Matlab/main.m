@@ -15,8 +15,8 @@ yalmip('clear')
 clear all
 clc
 
-doPlots = 1;        % Set this value to 1 if plots are wanted, set to 0 otherwise
-doAnimation = 1;    % Set this value to 1 if an animation is wanted, set to 0 otherwise
+doPlots = 0;        % Set this value to 1 if plots are wanted, set to 0 otherwise
+doAnimation = 0;    % Set this value to 1 if an animation is wanted, set to 0 otherwise
 
 tic
 
