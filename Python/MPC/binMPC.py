@@ -5,6 +5,7 @@ Created on Thu Oct 17 16:00:59 2019
 @author: jagov
 """
 import numpy as np
+import scipy
 
 def generate_prediction_matrices(LTI,N):
     nx,nu = LTI.B.shape
@@ -28,8 +29,21 @@ def generate_prediction_matrices(LTI,N):
 def generate_cost_matrices(predMat,weight,N):
     costMat = CostMatrix()
     
+    costMat.Q = predMat.S.T@scipy.linalg.block_diag(np.kron(np.eye(N),weight.Q),weight.P)@predMat.S + np.kron(np.eye(N),weight.R)
+    costMat.Qi = np.linalg.inv(costMat.Q)
+    costMat.c = predMat.S.T@scipy.linalg.block_diag(np.kron(np.eye(N),weight.Q),weight.P)@predMat.P
     
     return costMat
+
+def generate_constraint_matrices(predMat,Ac,bc,x0,N):
+    consMat = ConstraintMatrix()
+    AcBar = np.kron(np.eye(N+1),Ac)
+    bcBar = np.kron(np.ones((N+1,1)),bc)
+    
+    consMat.A = AcBar@predMat.S
+    consMat.b = bcBar - AcBar@predMat.P@x0
+    
+    return consMat
 
 class LTI: pass
 
@@ -38,3 +52,5 @@ class Weight: pass
 class PredictionMatrix: pass
 
 class CostMatrix: pass
+
+class ConstraintMatrix: pass
