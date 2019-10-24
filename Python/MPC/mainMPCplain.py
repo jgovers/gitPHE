@@ -5,20 +5,15 @@ Created on Tue Oct 15 14:02:07 2019
 @author: jagov
 """
 #%% Import libraries
-from phe import paillier as phe
 import numpy as np
 import control
 import binMPC as mpc
-import pheMat 
-import random
 import time
 import matplotlib.pyplot as plt
 
 #%% Init
 t0 = time.time()    # Timer 0
 
-public_key, private_key = phe.generate_paillier_keypair()   # Public and private keypair
-r = random.SystemRandom().randrange(1,2**16)                # Random obfuscation variable
 T = 20      # Control horizon
 n = 20      # Optimization horizon
 eta = 1     # Some optimiation stepsize variable
@@ -51,27 +46,17 @@ bc = np.array([[xBound],[xBound],[vMax],[vMax],[vMax],[vMax]])                  
 #%% MPC simulation
 x = np.zeros((4,T+1))   # States
 x[:,[0]] = x0           # Initial state
-mu0 = np.zeros((24,1))   # Dual variables
-mu0_e = pheMat.encrypt_ndarray(public_key,mu0)
-Dg0 = np.zeros((24,n))
 
 for k in range(T):
-    print('k:',k+1,'/',T)
-    consMat = mpc.generate_constraint_matrices(predMat,Ac,bc,x[:,[k]],N)
     c = costMat.c@(x[:,[k]]-WP)
-
-    b_e = pheMat.encrypt_ndarray(public_key,consMat.b)
-    c_e = pheMat.encrypt_ndarray(public_key,c)
-    mu_e = mu0_e
+    consMat = mpc.generate_constraint_matrices(predMat,Ac,bc,x[:,[k]],N)
+    mu = np.zeros((24,1))
+    Dg = np.zeros((24,n))
     
     for i in range(n):
-        print('i:',i+1,'/',n)
-        Dg_e = -consMat.A@costMat.Qi@(consMat.A.T@mu_e + c_e) - b_e
-        mub_e = r*(mu_e + eta*Dg_e)
-        mub = np.maximum(np.zeros((24,1)),mub_e.decrypt(private_key))
-        mu_e = pheMat.encrypt_ndarray(public_key,1/r*mub)
+        Dg[:,[i]] = -consMat.A@costMat.Qi@(consMat.A.T@mu + c) - consMat.b
+        mu = np.maximum(np.zeros((24,1)),mu + eta*Dg[:,[i]])
     
-    mu = mu_e.decrypt(private_key)
     us = -costMat.Qi@(consMat.A.T@mu + c) 
     Zs = .5*us.T@costMat.Q@us + c.T@us
     
