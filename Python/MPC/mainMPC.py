@@ -55,6 +55,8 @@ mu0 = np.zeros((24,1))   # Dual variables
 mu0_e = pheMat.encrypt_ndarray(public_key,mu0)
 Dg0 = np.zeros((24,n))
 
+t1 = time.time()
+
 for k in range(T):
     print('k:',k+1,'/',T)
     consMat = mpc.generate_constraint_matrices(predMat,Ac,bc,x[:,[k]],N)
@@ -78,8 +80,8 @@ for k in range(T):
     u = us[0:2,]
     x[:,[k+1]] = G.A@x[:,[k]] + G.B@u
            
-t1 = time.time()
-print('Elapsed time is',t1-t0,'seconds.')
+t2 = time.time()
+print('Elapsed time is',t2-t0,'seconds.')
         
 #%% Figures
 fig1, ax1 = plt.subplots(2)

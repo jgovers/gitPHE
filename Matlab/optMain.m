@@ -6,8 +6,8 @@ clc
 A = [1 0;-1 0;0 1;0 -1];
 b = [2;-1;1.5;-0.5];
 
-H = [6 2;2 4];
-f = [2;4];
+Q = [6 2;2 4];
+c = [2;4];
 
 a = 2;
 n = 101;
@@ -20,12 +20,12 @@ G = zeros(n);
 
 for i = 1:n
     for j = 1:n
-        Z(i,j) = .5*[x(i) y(j)]*H*[x(i);y(j)] + f'*[x(i);y(j)];
+        Z(i,j) = .5*[x(i) y(j)]*Q*[x(i);y(j)] + c'*[x(i);y(j)];
     end
 end
 
 %%
-[sol,fval] = quadprog(H,f,A,b);
+[sol,fval] = quadprog(Q,c,A,b);
 
 %%
 m = 50;
@@ -35,10 +35,10 @@ xs = zeros(2,m);
 eta = 1;
 
 for i = 1:m
-    Dg(:,i) = -A/H*(A'*mu(:,i)+f)-b;
+    Dg(:,i) = -A/Q*(A'*mu(:,i)+c)-b;
     mu(:,i+1) = max(zeros(4,1),mu(:,i)+eta*Dg(:,i));
-    xs(:,i) = -H\(A'*mu(:,i+1)+f);
-    Zs(i) = .5*xs(:,i)'*H*xs(:,i) + f'*xs(:,i);
+    xs(:,i) = -Q\(A'*mu(:,i+1)+c);
+    Zs(i) = .5*xs(:,i)'*Q*xs(:,i) + c'*xs(:,i);
 end
 
 %%
