@@ -30,3 +30,4 @@ plot([b/A b/A],[-150 300]);
 plot(x,g)
 xlabel('x'); ylabel('f')
 grid on
+title('Dual optimization')

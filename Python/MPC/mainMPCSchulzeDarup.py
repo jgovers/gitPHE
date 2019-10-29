@@ -5,18 +5,23 @@ Created on Tue Oct 15 14:02:07 2019
 @author: jagov
 """
 #%% Import libraries
+from phe import paillier as phe
 import numpy as np
 import control
 import binMPC as mpc
+import pheMat 
+import random
 import time
 import matplotlib.pyplot as plt
 
 #%% Init
 t0 = time.time()    # Timer 0
 
-T = 50      # Control horizon
+public_key, private_key = phe.generate_paillier_keypair()   # Public and private keypair
+r = random.SystemRandom().randrange(1,2**16)                # Random obfuscation variable
+T = 50    # Control horizon
 n = 20      # Optimization horizon
-eta = 1     # Some optimiation stepsize variable
+eta = .1     # Some optimiation stepsize variable
 N = 3       # Control horizon
 
 #%% Definitions 
@@ -46,25 +51,38 @@ bc = np.array([[xBound],[xBound],[vMax],[vMax],[vMax],[vMax]])                  
 #%% MPC simulation
 x = np.zeros((4,T+1))   # States
 x[:,[0]] = x0           # Initial state
+mu0 = np.zeros((24,1))   # Dual variables
+mu0_e = pheMat.encrypt_ndarray(public_key,mu0)
+Dg0 = np.zeros((24,n))
+
+t1 = time.time()
+
+u0 = np.zeros((6,1))
 
 for k in range(T):
-    c = costMat.c@(x[:,[k]]-WP)
+    print('k:',k+1,'/',T)
     consMat = mpc.generate_constraint_matrices(predMat,Ac,bc,x[:,[k]],N)
-    mu = np.zeros((24,1))
-    Dg = np.zeros((24,n))
+    c = costMat.c@(x[:,[k]]-WP)
+
+#    b_e = pheMat.encrypt_ndarray(public_key,consMat.b)
+#    c_e = pheMat.encrypt_ndarray(public_key,c)
     
-    for i in range(n):
-        Dg[:,[i]] = -consMat.A@costMat.Qi@(consMat.A.T@mu + c) - consMat.b
-        mu = np.maximum(np.zeros((24,1)),mu + eta*Dg[:,[i]])
-    
-    us = -costMat.Qi@(consMat.A.T@mu + c) 
+    # On server
+    us1 = (np.eye(6)-eta*costMat.Q)@u0 - eta*c
+
+    # On agent
+    us_up = np.minimum(5*np.ones_like(us1),us1)
+    us_low = np.maximum(-5*np.ones_like(us1),us_up)
+    us = us_low
     Zs = .5*us.T@costMat.Q@us + c.T@us
     
     u = us[0:2,]
+    u0[0:4,] = us[2:,]
+    u0[4:,] = np.zeros((2,1))
     x[:,[k+1]] = G.A@x[:,[k]] + G.B@u
            
-t1 = time.time()
-print('Elapsed time is',t1-t0,'seconds.')
+t2 = time.time()
+print('Elapsed time is',t2-t0,'seconds.')
         
 #%% Figures
 fig1, ax1 = plt.subplots(2)

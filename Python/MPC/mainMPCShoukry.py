@@ -66,6 +66,7 @@ for k in range(T):
     c_e = pheMat.encrypt_ndarray(public_key,c)
     mu_e = mu0_e
     
+    # On server
     for i in range(n):
         print('i:',i+1,'/',n)
         Dg_e = -consMat.A@costMat.Qi@(consMat.A.T@mu_e + c_e) - b_e
@@ -73,6 +74,7 @@ for k in range(T):
         mub = np.maximum(np.zeros((24,1)),mub_e.decrypt(private_key))
         mu_e = pheMat.encrypt_ndarray(public_key,1/r*mub)
     
+    # On agent
     mu = mu_e.decrypt(private_key)
     us = -costMat.Qi@(consMat.A.T@mu + c) 
     Zs = .5*us.T@costMat.Q@us + c.T@us
