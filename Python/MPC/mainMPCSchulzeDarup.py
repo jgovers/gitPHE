@@ -19,7 +19,7 @@ t0 = time.time()    # Timer 0
 
 public_key, private_key = phe.generate_paillier_keypair()   # Public and private keypair
 r = random.SystemRandom().randrange(1,2**16)                # Random obfuscation variable
-T = 50    # Control horizon
+T = 20    # Control horizon
 n = 20      # Optimization horizon
 eta = .1     # Some optimiation stepsize variable
 N = 3       # Control horizon
@@ -64,13 +64,14 @@ for k in range(T):
     consMat = mpc.generate_constraint_matrices(predMat,Ac,bc,x[:,[k]],N)
     c = costMat.c@(x[:,[k]]-WP)
 
-#    b_e = pheMat.encrypt_ndarray(public_key,consMat.b)
-#    c_e = pheMat.encrypt_ndarray(public_key,c)
+    c_e = pheMat.encrypt_ndarray(public_key,c)
+    u0_e = pheMat.encrypt_ndarray(public_key,u0)
     
     # On server
-    us1 = (np.eye(6)-eta*costMat.Q)@u0 - eta*c
+    us1_e = (np.eye(6)-eta*costMat.Q)@u0_e - eta*c_e
 
     # On agent
+    us1 = us1_e.decrypt(private_key)
     us_up = np.minimum(5*np.ones_like(us1),us1)
     us_low = np.maximum(-5*np.ones_like(us1),us_up)
     us = us_low
