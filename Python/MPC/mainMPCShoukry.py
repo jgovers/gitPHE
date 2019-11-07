@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 #%% Init
 t0 = time.time()    # Timer 0
 
-public_key, private_key = phe.generate_paillier_keypair()   # Public and private keypair
+public_key, private_key = phe.generate_paillier_keypair(n_length = 1024)   # Public and private keypair
 r = random.SystemRandom().randrange(1,2**16)                # Random obfuscation variable
 T = 20      # Control horizon
 n = 20      # Optimization horizon

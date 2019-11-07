@@ -19,9 +19,9 @@ t0 = time.time()    # Timer 0
 
 public_key, private_key = phe.generate_paillier_keypair()   # Public and private keypair
 r = random.SystemRandom().randrange(1,2**16)                # Random obfuscation variable
-T = 20    # Control horizon
+T = 20      # Time horizon
 n = 20      # Optimization horizon
-eta = .1     # Some optimiation stepsize variable
+eta = .1    # Some optimiation stepsize variable
 N = 3       # Control horizon
 
 #%% Definitions 
