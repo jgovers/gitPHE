@@ -62,20 +62,20 @@ u0 = np.zeros((6,1))
 for k in range(T):
     print('k:',k+1,'/',T)
     consMat = mpc.generate_constraint_matrices(predMat,Ac,bc,x[:,[k]],N)
-    c = costMat.c@(x[:,[k]]-WP)
+    c = costMat.F@(x[:,[k]]-WP)
 
     c_e = pheMat.encrypt_ndarray(public_key,c)
     u0_e = pheMat.encrypt_ndarray(public_key,u0)
     
     # On server
-    us1_e = (np.eye(6)-eta*costMat.Q)@u0_e - eta*c_e
+    us1_e = (np.eye(6)-eta*costMat.H)@u0_e - eta*c_e
 
     # On agent
     us1 = us1_e.decrypt(private_key)
     us_up = np.minimum(5*np.ones_like(us1),us1)
     us_low = np.maximum(-5*np.ones_like(us1),us_up)
     us = us_low
-    Zs = .5*us.T@costMat.Q@us + c.T@us
+    Zs = .5*us.T@costMat.H@us + c.T@us
     
     u = us[0:2,]
     u0[0:4,] = us[2:,]

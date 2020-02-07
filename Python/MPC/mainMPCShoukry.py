@@ -63,7 +63,7 @@ t1 = time.time()
 for k in range(T):
     print('k:',k+1,'/',T)
     consMat = mpc.generate_constraint_matrices(predMat,Ac,bc,x[:,[k]],N)
-    c = costMat.c@(x[:,[k]]-WP)
+    c = costMat.F@(x[:,[k]]-WP)
 
     b_e = pheMat.encrypt_ndarray(public_key,consMat.b)
     c_e = pheMat.encrypt_ndarray(public_key,c)
@@ -72,15 +72,15 @@ for k in range(T):
     # On server
     for i in range(n):
         print('i:',i+1,'/',n)
-        Dg_e = -consMat.A@costMat.Qi@(consMat.A.T@mu_e + c_e) - b_e
+        Dg_e = -consMat.A@costMat.Hi@(consMat.A.T@mu_e + c_e) - b_e
         mub_e = r*(mu_e + eta*Dg_e)
         mub = np.maximum(np.zeros((24,1)),mub_e.decrypt(private_key))
         mu_e = pheMat.encrypt_ndarray(public_key,1/r*mub)
     
     # On agent
     mu = mu_e.decrypt(private_key)
-    us = -costMat.Qi@(consMat.A.T@mu + c) 
-    Zs = .5*us.T@costMat.Q@us + c.T@us
+    us = -costMat.Hi@(consMat.A.T@mu + c) 
+    Zs = .5*us.T@costMat.H@us + c.T@us
     
     u = us[0:2,]
     x[:,[k+1]] = G.A@x[:,[k]] + G.B@u

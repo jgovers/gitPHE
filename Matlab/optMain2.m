@@ -3,11 +3,11 @@ close all
 clc
 
 %%
-Q = 2;
+H = 2;
 c = 4;
 
-A = 1;
-b = 3;
+A = -1;
+b = -3;
 
 a = 15;
 n = 101;
@@ -17,8 +17,8 @@ f0 = zeros(n,1);
 g = zeros(n,1);
 
 for i = 1:n
-    f0(i) = .5*x(i)*Q*x(i) + c'*x(i);
-    g(i) = -.5*(A*x(i)+c)*(1/Q)*(A*x(i)+c)-b*x(i);
+    f0(i) = .5*x(i)*H*x(i) + c'*x(i);
+    g(i) = -.5*(A*x(i)+c)*(1/H)*(A*x(i)+c)-b*x(i);
 end
 
 
